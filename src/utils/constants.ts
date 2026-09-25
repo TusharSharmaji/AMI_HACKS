@@ -75,17 +75,71 @@ export const NAV_ROUTES: NavRoute[] = [
   },
 ];
 
+export const DARK_MAP_STYLE: any = {
+  version: 8,
+  name: 'CityPulse Dark',
+  sources: {
+    'carto-dark': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+      ],
+      tileSize: 256,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    },
+  },
+  layers: [
+    {
+      id: 'carto-dark-layer',
+      type: 'raster',
+      source: 'carto-dark',
+      minzoom: 0,
+      maxzoom: 22,
+    },
+  ],
+};
+
+export const LIGHT_MAP_STYLE: any = {
+  version: 8,
+  name: 'CityPulse Light',
+  sources: {
+    'carto-voyager': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+        'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+      ],
+      tileSize: 256,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    },
+  },
+  layers: [
+    {
+      id: 'carto-voyager-layer',
+      type: 'raster',
+      source: 'carto-voyager',
+      minzoom: 0,
+      maxzoom: 22,
+    },
+  ],
+};
+
 export const MAP_STYLES = [
   {
     id: 'dark',
     name: 'Dark',
-    url: 'https://tiles.openfreemap.org/styles/dark',
-    description: 'Dark theme for nighttime operations',
+    url: DARK_MAP_STYLE,
+    description: 'Dark high-contrast night cartography',
   },
   {
     id: 'liberty',
     name: 'Liberty',
-    url: 'https://tiles.openfreemap.org/styles/liberty',
+    url: LIGHT_MAP_STYLE,
     description: 'Clean detailed daylight cartography',
   },
 ];
