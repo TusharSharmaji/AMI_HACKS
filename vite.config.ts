@@ -7,6 +7,9 @@ export default defineConfig({
   define: {
     CESIUM_BASE_URL: JSON.stringify('/cesium/'),
   },
+  optimizeDeps: {
+    exclude: ['maplibre-gl'],
+  },
 
   build: {
     chunkSizeWarningLimit: 2500,

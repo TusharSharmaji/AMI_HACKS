@@ -726,9 +726,9 @@ export const MapView: React.FC<MapViewProps> = ({
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Use the CARTO style URL directly — these are public CDN URLs with no API key required
-    const initialStyleUrl = targetStyleUrl;
-    console.log('[CityPulse Map] Initializing MapLibre with style:', initialStyleUrl);
+    // OpenFreeMap style URL (defaults to liberty)
+    const initialStyleUrl = targetStyleUrl || 'https://tiles.openfreemap.org/styles/liberty';
+    console.log('[CityPulse MapLibre Init] Style URL:', initialStyleUrl);
 
     const mapInstance = new Map({
       container: mapContainer.current,
@@ -740,9 +740,13 @@ export const MapView: React.FC<MapViewProps> = ({
       attributionControl: false,
     });
 
-    // ─── Error Handling ──────────────────────────────────────────────────
+    // ─── Diagnostics & Error Handling ─────────────────────────────────────
     mapInstance.on('error', (e) => {
-      console.error('[CityPulse Map] MapLibre error:', e.error?.message || e.error || e);
+      console.error('[CityPulse MapLibre Error]', e.error?.message || e.error || e);
+    });
+
+    mapInstance.on('style.load', () => {
+      console.log('[CityPulse MapLibre style.load]', initialStyleUrl);
     });
 
     // ─── Controls ────────────────────────────────────────────────────────
@@ -752,12 +756,12 @@ export const MapView: React.FC<MapViewProps> = ({
     );
     mapInstance.addControl(new ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left');
     mapInstance.addControl(
-      new AttributionControl({ compact: true, customAttribution: 'CityPulse · © OpenStreetMap · CARTO' }),
+      new AttributionControl({ compact: true, customAttribution: 'CityPulse · © OpenStreetMap · OpenFreeMap' }),
       'bottom-right'
     );
 
     mapInstance.on('load', async () => {
-      console.log('[CityPulse Map] Style loaded successfully');
+      console.log('[CityPulse MapLibre load] Base map loaded successfully');
       setIsMapLoaded(true);
       mapInstance.resize();
 
