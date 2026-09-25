@@ -2,6 +2,13 @@ export * from './location';
 export * from './weather';
 export * from './airQuality';
 export * from './traffic';
+export type {
+  CityPulseSignal,
+  SignalCategory,
+  SignalConfidence,
+  SignalSeverity,
+  SignalMetricItem,
+} from '../services/signalEngine';
 
 export type NavRoute = {
   name: string;

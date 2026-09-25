@@ -9,10 +9,14 @@ import {
   Bell,
   CloudSun,
   Box,
+  User,
+  Settings as SettingsIcon,
+  LogOut,
 } from 'lucide-react';
 import { useLocation } from '../../hooks/useLocation';
 import { useCivicDataContext } from '../../hooks/useCivicDataContext';
 import { useMapLayers } from '../../context/MapLayersContext';
+import { useUser } from '../../context/UserContext';
 import { searchLocations } from '../../services/geocodingService';
 import { getWeatherCodeInfo } from '../../utils/civicDataUtils';
 import type { SelectedLocation } from '../../types/location';
@@ -37,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, isMobileNavOp
   const { selectedLocation, setSelectedLocation } = useLocation();
   const { weather } = useCivicDataContext();
   const { mapTheme, toggleTheme } = useMapLayers();
+  const { user, signOut } = useUser();
 
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
@@ -60,14 +65,19 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, isMobileNavOp
   const [showCityMenu, setShowCityMenu] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
 
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowSearchDropdown(false);
       if (cityRef.current && !cityRef.current.contains(e.target as Node)) setShowCityMenu(false);
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setShowProfileMenu(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
 
   useEffect(() => {
     const trimmed = searchQuery.trim();
@@ -215,9 +225,92 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, isMobileNavOp
       </button>
 
       {/* Profile */}
-      <button className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0 hover:ring-2 hover:ring-cyan-400/50 transition-all">
-        A
-      </button>
+      <div className="relative shrink-0" ref={profileRef}>
+        <button
+          onClick={() => setShowProfileMenu(!showProfileMenu)}
+          className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0 hover:ring-2 hover:ring-cyan-400/50 transition-all shadow-md"
+          title={`${user.name} (${user.role})`}
+        >
+          {user.avatarInitials}
+        </button>
+
+        {showProfileMenu && (
+          <div className="absolute right-0 top-10 w-52 bg-[#0d1424] border border-white/12 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="p-3 border-b border-white/8 bg-white/[0.02]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  {user.avatarInitials}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-bold text-white leading-tight truncate">
+                    {user.name}
+                  </div>
+                  <div className="text-[10px] font-medium text-cyan-400 leading-tight mt-0.5 truncate">
+                    {user.role}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-1.5 space-y-0.5">
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  navigate('/overview');
+                }}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12px] text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <User className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Profile</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                }}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12px] text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <SettingsIcon className="w-3.5 h-3.5 text-slate-400" />
+                <span>Settings</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  toggleTheme();
+                  setShowProfileMenu(false);
+                }}
+                className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12px] text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  {mapTheme === 'dark' ? (
+                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  ) : (
+                    <Moon className="w-3.5 h-3.5 text-slate-400" />
+                  )}
+                  <span>Theme</span>
+                </div>
+                <span className="text-[9px] uppercase font-bold text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
+                  {mapTheme}
+                </span>
+              </button>
+
+              <div className="h-px bg-white/8 my-1" />
+
+              <button
+                onClick={() => {
+                  signOut();
+                  setShowProfileMenu(false);
+                }}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12px] text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5 text-red-400" />
+                <span>Sign out</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 };
+

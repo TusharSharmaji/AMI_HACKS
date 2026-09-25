@@ -5,6 +5,8 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { LocationProvider } from './context/LocationContext';
 import { CivicDataProvider } from './context/CivicDataContext';
 import { MapLayersProvider } from './context/MapLayersContext';
+import { UserProvider } from './context/UserContext';
+
 
 // Pages
 import { Overview } from './pages/Overview';
@@ -21,31 +23,34 @@ import { CityNews } from './pages/CityNews';
 export const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <LocationProvider>
-        <CivicDataProvider>
-          <MapLayersProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route element={<AppLayout />}>
-                  <Route index element={<Overview />} />
-                  <Route path="live-city" element={<LiveCity />} />
-                  <Route path="digital-twin" element={<DigitalTwin />} />
-                  <Route path="risk-intelligence" element={<RiskIntelligence />} />
-                  <Route path="report-issue" element={<ReportIssue />} />
-                  <Route path="scenario-lab" element={<ScenarioLab />} />
-                  <Route path="city-replay" element={<CityReplay />} />
-                  <Route path="ask-citypulse" element={<AskCityPulse />} />
-                  <Route path="municipal-command" element={<MunicipalCommand />} />
-                  <Route path="city-news" element={<CityNews />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Route>
-              </Routes>
-            </BrowserRouter>
-          </MapLayersProvider>
-        </CivicDataProvider>
-      </LocationProvider>
+      <UserProvider>
+        <LocationProvider>
+          <CivicDataProvider>
+            <MapLayersProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route element={<AppLayout />}>
+                    <Route index element={<Overview />} />
+                    <Route path="live-city" element={<LiveCity />} />
+                    <Route path="digital-twin" element={<DigitalTwin />} />
+                    <Route path="risk-intelligence" element={<RiskIntelligence />} />
+                    <Route path="report-issue" element={<ReportIssue />} />
+                    <Route path="scenario-lab" element={<ScenarioLab />} />
+                    <Route path="city-replay" element={<CityReplay />} />
+                    <Route path="ask-citypulse" element={<AskCityPulse />} />
+                    <Route path="municipal-command" element={<MunicipalCommand />} />
+                    <Route path="city-news" element={<CityNews />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+            </MapLayersProvider>
+          </CivicDataProvider>
+        </LocationProvider>
+      </UserProvider>
     </ErrorBoundary>
   );
+
 };
 
 export default App;

@@ -33,6 +33,9 @@ import {
   type RiskHotspot,
 } from '../services/riskEngine';
 import { explainRiskAssessment } from '../services/geminiService';
+import { detectCityPulseSignals, type CityPulseSignal } from '../services/signalEngine';
+import { Zap } from 'lucide-react';
+
 
 export const RiskIntelligence: React.FC = () => {
   const { selectedLocation } = useLocation();
@@ -107,6 +110,18 @@ export const RiskIntelligence: React.FC = () => {
       trafficLastUpdated,
     });
   }, [selectedLocation, weather, airQuality, traffic, trafficPoints, citizenReports, pois, filteredPois, trafficLastUpdated]);
+
+  // Detected CityPulse Cross-Feed Signals (Empirical Supporting Evidence)
+  const detectedSignals: CityPulseSignal[] = useMemo(() => {
+    return detectCityPulseSignals({
+      location: selectedLocation,
+      weather,
+      airQuality,
+      traffic,
+      trafficPoints,
+      citizenReports,
+    });
+  }, [selectedLocation, weather, airQuality, traffic, trafficPoints, citizenReports]);
 
   // Recalculate on city change & clear old selections
   useEffect(() => {
@@ -320,6 +335,40 @@ export const RiskIntelligence: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            {/* Detected CityPulse Signals (Supporting Cross-Feed Evidence) */}
+            {detectedSignals.length > 0 && (
+              <div className="pt-2 border-t border-white/8 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    Detected CityPulse Signal
+                  </span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    Supporting Evidence
+                  </span>
+                </div>
+                {detectedSignals.map((sig) => (
+                  <div
+                    key={sig.id}
+                    className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white text-xs">{sig.title}</span>
+                      <span className="text-[9px] font-bold text-cyan-300 bg-cyan-500/15 px-1.5 py-0.5 rounded border border-cyan-500/30">
+                        {sig.confidence} CONF
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-300 leading-relaxed">
+                      {sig.explanation}
+                    </p>
+                    <div className="text-[9px] text-amber-200/80 italic">
+                      Note: {sig.disclaimer}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

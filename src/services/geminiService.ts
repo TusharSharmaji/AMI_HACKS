@@ -212,10 +212,28 @@ export interface ChatContext {
     pm2_5?: number;
     pm10?: number;
   } | null;
+  traffic?: {
+    currentSpeed?: number;
+    freeFlowSpeed?: number;
+    congestionPercentage?: number;
+    severeCount?: number;
+  } | null;
   reportStats?: {
     total: number;
     byStatus: Record<string, number>;
     bySeverity: Record<string, number>;
+  } | null;
+  signals?: Array<{
+    title: string;
+    confidence: string;
+    explanation: string;
+    evidence: string[];
+    disclaimer: string;
+  }> | null;
+  risk?: {
+    score: number;
+    level: string;
+    primaryFactor?: string;
   } | null;
 }
 
@@ -254,11 +272,31 @@ PM2.5: ${context.airQuality.pm2_5 != null ? `${context.airQuality.pm2_5} µg/m³
 PM10: ${context.airQuality.pm10 != null ? `${context.airQuality.pm10} µg/m³` : 'N/A'}`
     : 'Air quality data not available.';
 
+  const trafficBlock = context.traffic
+    ? `Average speed: ${context.traffic.currentSpeed != null ? `${context.traffic.currentSpeed} km/h` : 'N/A'}
+Free flow speed: ${context.traffic.freeFlowSpeed != null ? `${context.traffic.freeFlowSpeed} km/h` : 'N/A'}
+Congestion level: ${context.traffic.congestionPercentage != null ? `${context.traffic.congestionPercentage}%` : 'N/A'}
+Severe delay corridors: ${context.traffic.severeCount ?? 0}`
+    : 'Traffic feed not available.';
+
   const reportsBlock = context.reportStats
     ? `Total civic reports: ${context.reportStats.total}
 By status: ${JSON.stringify(context.reportStats.byStatus)}
 By severity: ${JSON.stringify(context.reportStats.bySeverity)}`
     : 'No civic report data available.';
+
+  const signalsBlock = context.signals && context.signals.length > 0
+    ? context.signals
+        .map(
+          (s, i) =>
+            `${i + 1}. [${s.title}] (Confidence: ${s.confidence})\n   Explanation: ${s.explanation}\n   Evidence: ${s.evidence.join('; ')}\n   Note: ${s.disclaimer}`
+        )
+        .join('\n\n')
+    : 'No anomalous cross-feed patterns currently detected. All feeds nominal.';
+
+  const riskBlock = context.risk
+    ? `Overall City Risk Score: ${context.risk.score}/100 (${context.risk.level} level)\nPrimary Risk Driver: ${context.risk.primaryFactor || 'Standard baseline'}`
+    : 'Risk score calculating.';
 
   const systemPrompt = `You are CityPulse AI, a knowledgeable civic assistant for the city of ${context.cityName}, ${context.country} (${context.latitude.toFixed(4)}, ${context.longitude.toFixed(4)}).
 
@@ -270,12 +308,23 @@ ${weatherBlock}
 ## Air Quality (${context.cityName})
 ${aqBlock}
 
+## Live Traffic Conditions (${context.cityName})
+${trafficBlock}
+
 ## Civic Reports (local, this session)
 ${reportsBlock}
 
+## Detected CityPulse Signals (Cross-Feed Correlations)
+${signalsBlock}
+
+## Risk Assessment
+${riskBlock}
+
 ## Rules
 - Answer questions about the city, its civic conditions, environment, infrastructure, and public services.
-- When the user asks about weather, AQI, or reports, use the data above — DO NOT invent values.
+- When asked "Why is traffic high here?", "What is happening in this area?", "Are weather and traffic related right now?", or "Why is risk elevated?", consult the Detected CityPulse Signals, Traffic, and Weather data above.
+- NEVER state that correlation is guaranteed causation; mention that signals represent observed temporal/spatial overlaps in live feeds without claiming weather definitively caused traffic delays.
+- When the user asks about weather, AQI, traffic, or reports, use ONLY the data above — DO NOT invent values.
 - If data is marked "not available", say so honestly rather than guessing.
 - Keep answers concise (2–4 sentences for simple questions, up to a short paragraph for complex ones).
 - You may explain civic concepts, interpret AQI levels, describe weather conditions, or give general civic advice.

@@ -10,18 +10,23 @@ import type { ChatMessage, ChatContext } from '../services/geminiService';
 import { getReports } from '../services/reportService';
 import { useCivicDataContext } from '../hooks/useCivicDataContext';
 import { useLocation } from '../hooks/useLocation';
+import { useTrafficData } from '../hooks/useTrafficData';
+import { useCityTraffic } from '../hooks/useCityTraffic';
+import { detectCityPulseSignals } from '../services/signalEngine';
+import { calculateRiskAssessment } from '../services/riskEngine';
 
 // ─── Suggested prompts ────────────────────────────────────────────────────────
 const SUGGESTED_PROMPTS = [
+  'Why is traffic high here?',
+  'Are weather and traffic related right now?',
+  'Why is risk elevated?',
+  'What cross-feed CityPulse Signals are active?',
   'What is the current air quality like?',
   'How is the weather right now?',
   'How many civic reports have been submitted?',
-  'Are there any critical severity reports?',
-  'Is the air quality safe for outdoor exercise today?',
-  'What does the current weather code mean?',
   'Summarise the current civic health of the city.',
-  'Which issues are still unresolved?',
 ];
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function generateId() {
@@ -98,6 +103,8 @@ const ContextPill: React.FC<{ label: string; value: string; icon: React.ReactNod
 export const AskCityPulse: React.FC = () => {
   const { selectedLocation } = useLocation();
   const { weather, airQuality, weatherLoading, airQualityLoading } = useCivicDataContext();
+  const { traffic } = useTrafficData();
+  const { trafficPoints } = useCityTraffic();
 
   const [messages, setMessages] = useState<(ChatMessage & { id: string; isStreaming?: boolean })[]>([]);
   const [input, setInput] = useState('');
@@ -131,6 +138,28 @@ export const AskCityPulse: React.FC = () => {
       byStatus[r.status] = (byStatus[r.status] ?? 0) + 1;
       bySeverity[r.severity] = (bySeverity[r.severity] ?? 0) + 1;
     }
+
+    // Deterministic Signals
+    const detectedSignals = detectCityPulseSignals({
+      location: selectedLocation,
+      weather,
+      airQuality,
+      traffic,
+      trafficPoints,
+      citizenReports: reports,
+    });
+
+    // Deterministic Risk Assessment
+    const riskAssessment = calculateRiskAssessment({
+      location: selectedLocation,
+      weather,
+      airQuality,
+      traffic,
+      trafficPoints,
+      citizenReports: reports,
+      pois: [],
+    });
+
     return {
       cityName: selectedLocation.name,
       country: selectedLocation.country,
@@ -154,9 +183,30 @@ export const AskCityPulse: React.FC = () => {
             pm10: airQuality.pm10,
           }
         : null,
+      traffic: traffic
+        ? {
+            currentSpeed: traffic.currentSpeed,
+            freeFlowSpeed: traffic.freeFlowSpeed,
+            congestionPercentage: traffic.congestionPercentage,
+            severeCount: trafficPoints.filter((p) => p.condition === 'Severe').length,
+          }
+        : null,
       reportStats: reports.length > 0 ? { total: reports.length, byStatus, bySeverity } : null,
+      signals: detectedSignals.map((s) => ({
+        title: s.title,
+        confidence: s.confidence,
+        explanation: s.explanation,
+        evidence: s.evidence,
+        disclaimer: s.disclaimer,
+      })),
+      risk: {
+        score: riskAssessment.overallScore,
+        level: riskAssessment.level,
+        primaryFactor: riskAssessment.topFactors[0]?.title,
+      },
     };
-  }, [selectedLocation, weather, airQuality]);
+  }, [selectedLocation, weather, airQuality, traffic, trafficPoints]);
+
 
   const send = useCallback(async (text: string) => {
     const question = text.trim();

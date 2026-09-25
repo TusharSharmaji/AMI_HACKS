@@ -25,6 +25,7 @@ import { ISSUE_TYPE_LABELS, SEVERITY_COLORS, WORKFLOW_STAGES } from '../../types
 import { getReports, updateReportStatus, REPORT_SAVED_EVENT } from '../../services/reportService';
 import { formatTravelTime } from '../../services/trafficService';
 import { registerPoiMapImages } from './MarkerElements';
+import type { CityPulseSignal } from '../../services/signalEngine';
 
 interface MapViewProps {
   onCoordinatesChange?: (coords: { lng: number; lat: number; zoom: number }) => void;
@@ -37,6 +38,8 @@ interface MapViewProps {
   showPois?: boolean;
   citizenReports?: CivicReportMeta[];
   showCitizenReports?: boolean;
+  signals?: CityPulseSignal[];
+  showSignals?: boolean;
 }
 
 const CITY_TRAFFIC_SOURCE_ID = 'citypulse-city-traffic-source';
@@ -51,6 +54,10 @@ const CITIZEN_REPORTS_SOURCE_ID = 'citypulse-citizen-reports-source';
 const CITIZEN_REPORTS_HALO_LAYER_ID = 'citypulse-citizen-reports-halo';
 const CITIZEN_REPORTS_CORE_LAYER_ID = 'citypulse-citizen-reports-core';
 
+const CITY_SIGNALS_SOURCE_ID = 'citypulse-signals-source';
+const CITY_SIGNALS_HALO_LAYER_ID = 'citypulse-signals-halo';
+const CITY_SIGNALS_CORE_LAYER_ID = 'citypulse-signals-core';
+
 export const MapView: React.FC<MapViewProps> = ({
   onCoordinatesChange,
   className = '',
@@ -62,7 +69,10 @@ export const MapView: React.FC<MapViewProps> = ({
   showPois,
   citizenReports,
   showCitizenReports,
+  signals = [],
+  showSignals = true,
 }) => {
+
   const { selectedLocation, mapTarget } = useLocation();
   const { mapTheme, showTraffic: ctxShowTraffic, showPois: ctxShowPois, showReports: ctxShowReports } = useMapLayers();
 
@@ -117,6 +127,8 @@ export const MapView: React.FC<MapViewProps> = ({
   const showPoisRef = useRef<boolean>(effectiveShowPois);
   const citizenReportsRef = useRef<CivicReportMeta[]>(localReports);
   const showCitizenReportsRef = useRef<boolean>(effectiveShowReports);
+  const signalsRef = useRef<CityPulseSignal[]>(signals);
+  const showSignalsRef = useRef<boolean>(showSignals);
 
   useEffect(() => { cityTrafficPointsRef.current = cityTrafficPoints; }, [cityTrafficPoints]);
   useEffect(() => { showTrafficMarkersRef.current = effectiveShowTraffic; }, [effectiveShowTraffic]);
@@ -124,6 +136,8 @@ export const MapView: React.FC<MapViewProps> = ({
   useEffect(() => { showPoisRef.current = effectiveShowPois; }, [effectiveShowPois]);
   useEffect(() => { citizenReportsRef.current = localReports; }, [localReports]);
   useEffect(() => { showCitizenReportsRef.current = effectiveShowReports; }, [effectiveShowReports]);
+  useEffect(() => { signalsRef.current = signals; }, [signals]);
+  useEffect(() => { showSignalsRef.current = showSignals; }, [showSignals]);
 
   // Global handler for advancing report status from popup
   useEffect(() => {
@@ -558,6 +572,155 @@ export const MapView: React.FC<MapViewProps> = ({
     });
   }, [openReportPopup]);
 
+  const openSignalPopup = useCallback((mapInstance: Map, coordinates: [number, number], props: any) => {
+    if (activePopupRef.current) {
+      activePopupRef.current.remove();
+      activePopupRef.current = null;
+    }
+
+    const title = props.title || 'CityPulse Signal';
+    const confidence = props.confidence || 'MEDIUM';
+    const explanation = props.explanation || '';
+    const disclaimer = props.disclaimer || '';
+    const locationName = props.locationName || '';
+    const timeWindow = props.timeWindow || '';
+    const metrics: any[] = typeof props.metrics === 'string' ? JSON.parse(props.metrics || '[]') : (props.metrics || []);
+    const evidence: string[] = typeof props.evidence === 'string' ? JSON.parse(props.evidence || '[]') : (props.evidence || []);
+
+    const confColor = confidence === 'HIGH' ? '#ef4444' : confidence === 'MEDIUM' ? '#f59e0b' : '#38bdf8';
+    const confBg = confidence === 'HIGH' ? 'rgba(239, 68, 68, 0.15)' : confidence === 'MEDIUM' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(56, 189, 248, 0.15)';
+
+    const metricsHtml = metrics.map((m: any) => `
+      <div style="background: rgba(255,255,255,0.04); padding: 5px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+        <div style="font-size: 8px; color: #94a3b8; text-transform: uppercase;">${m.label}</div>
+        <div style="font-weight: 700; color: #fff; font-size: 12px; margin-top: 2px;">${m.value}</div>
+      </div>
+    `).join('');
+
+    const evidenceHtml = evidence.map((e: string) => `
+      <li style="margin-bottom: 3px;">${e}</li>
+    `).join('');
+
+    const popupHtml = `
+      <div style="font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 11px; min-width: 250px; max-width: 320px; line-height: 1.4; color: #f1f5f9;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 6px; margin-bottom: 8px;">
+          <span style="font-weight: 800; color: #fbbf24; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px;">
+            ⚡ CityPulse Signal
+          </span>
+          <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; background: ${confBg}; color: ${confColor}; border: 1px solid ${confColor}40;">
+            ${confidence} CONFIDENCE
+          </span>
+        </div>
+        <div style="font-size: 13px; font-weight: 800; color: #ffffff; margin-bottom: 4px; line-height: 1.25;">
+          ${title}
+        </div>
+        <div style="display: flex; gap: 8px; font-size: 9px; color: #94a3b8; margin-bottom: 8px;">
+          <span>📍 ${locationName}</span>
+          <span>⏱️ ${timeWindow}</span>
+        </div>
+        ${metricsHtml ? `<div style="display: grid; grid-template-columns: repeat(${Math.min(metrics.length, 3)}, 1fr); gap: 4px; margin-bottom: 8px;">${metricsHtml}</div>` : ''}
+        ${evidenceHtml ? `
+          <div style="background: rgba(255,255,255,0.03); padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px;">
+            <div style="font-size: 9px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 3px;">Observed Evidence</div>
+            <ul style="margin: 0; padding-left: 14px; font-size: 10px; color: #cbd5e1;">${evidenceHtml}</ul>
+          </div>
+        ` : ''}
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 6px; line-height: 1.35;">
+          ${explanation}
+        </div>
+        <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 6px; padding: 5px 7px; font-size: 9px; color: #fde68a; line-height: 1.3;">
+          ⚠️ <strong>Note:</strong> ${disclaimer}
+        </div>
+      </div>
+    `;
+
+    const popup = new Popup({
+      closeButton: true,
+      closeOnClick: true,
+      maxWidth: '340px',
+      className: 'citypulse-custom-popup',
+    })
+      .setLngLat(coordinates)
+      .setHTML(popupHtml)
+      .addTo(mapInstance);
+    activePopupRef.current = popup;
+  }, []);
+
+  const syncSignalsToMap = useCallback((mapInstance: Map, signalsList: CityPulseSignal[], show: boolean) => {
+    if (!mapInstance || !mapInstance.isStyleLoaded()) return;
+
+    const geojsonData = {
+      type: 'FeatureCollection' as const,
+      features: (!show || !signalsList) ? [] : signalsList.map((sig) => ({
+        type: 'Feature' as const,
+        id: sig.id,
+        geometry: { type: 'Point' as const, coordinates: [sig.longitude, sig.latitude] },
+        properties: {
+          id: sig.id,
+          title: sig.title,
+          category: sig.category,
+          confidence: sig.confidence,
+          locationName: sig.locationName,
+          timeWindow: sig.timeWindow,
+          explanation: sig.explanation,
+          disclaimer: sig.disclaimer,
+          metrics: JSON.stringify(sig.metrics),
+          evidence: JSON.stringify(sig.evidence),
+        },
+      })),
+    };
+
+    const existingSource = mapInstance.getSource(CITY_SIGNALS_SOURCE_ID) as GeoJSONSource | undefined;
+    if (existingSource) {
+      existingSource.setData(geojsonData);
+    } else {
+      mapInstance.addSource(CITY_SIGNALS_SOURCE_ID, { type: 'geojson', data: geojsonData });
+
+      // Signal outer pulsing halo
+      mapInstance.addLayer({
+        id: CITY_SIGNALS_HALO_LAYER_ID,
+        type: 'circle',
+        source: CITY_SIGNALS_SOURCE_ID,
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 14, 13, 22, 16, 32],
+          'circle-color': '#f59e0b',
+          'circle-opacity': 0.25,
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#f59e0b',
+          'circle-stroke-opacity': 0.8,
+        },
+      });
+
+      // Signal core
+      mapInstance.addLayer({
+        id: CITY_SIGNALS_CORE_LAYER_ID,
+        type: 'circle',
+        source: CITY_SIGNALS_SOURCE_ID,
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 6, 13, 9, 16, 12],
+          'circle-color': '#fbbf24',
+          'circle-opacity': 0.95,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      mapInstance.on('mouseenter', CITY_SIGNALS_CORE_LAYER_ID, () => {
+        mapInstance.getCanvas().style.cursor = 'pointer';
+      });
+      mapInstance.on('mouseleave', CITY_SIGNALS_CORE_LAYER_ID, () => {
+        mapInstance.getCanvas().style.cursor = '';
+      });
+
+      mapInstance.on('click', CITY_SIGNALS_CORE_LAYER_ID, (e) => {
+        if (!e.features || e.features.length === 0) return;
+        const feature = e.features[0];
+        const coordinates = (feature.geometry as { coordinates: [number, number] }).coordinates.slice() as [number, number];
+        openSignalPopup(mapInstance, coordinates, feature.properties);
+      });
+    }
+  }, [openSignalPopup]);
+
   // ─── Map Initialization ─────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -600,6 +763,7 @@ export const MapView: React.FC<MapViewProps> = ({
       syncTrafficPointsToMap(mapInstance, cityTrafficPointsRef.current, showTrafficMarkersRef.current);
       syncPoisToMap(mapInstance, poisRef.current, showPoisRef.current);
       syncCitizenReportsToMap(mapInstance, citizenReportsRef.current, showCitizenReportsRef.current);
+      syncSignalsToMap(mapInstance, signalsRef.current, showSignalsRef.current);
     });
 
     mapInstance.on('moveend', () => {
@@ -638,9 +802,10 @@ export const MapView: React.FC<MapViewProps> = ({
         syncTrafficPointsToMap(map.current, cityTrafficPointsRef.current, showTrafficMarkersRef.current);
         syncPoisToMap(map.current, poisRef.current, showPoisRef.current);
         syncCitizenReportsToMap(map.current, citizenReportsRef.current, showCitizenReportsRef.current);
+        syncSignalsToMap(map.current, signalsRef.current, showSignalsRef.current);
       }
     });
-  }, [targetStyleUrl, isMapLoaded, syncTrafficPointsToMap, syncPoisToMap, syncCitizenReportsToMap]);
+  }, [targetStyleUrl, isMapLoaded, syncTrafficPointsToMap, syncPoisToMap, syncCitizenReportsToMap, syncSignalsToMap]);
 
   // Synchronize layers
   useEffect(() => {
@@ -657,6 +822,11 @@ export const MapView: React.FC<MapViewProps> = ({
     if (!map.current || !isMapLoaded) return;
     syncCitizenReportsToMap(map.current, localReports, effectiveShowReports);
   }, [localReports, effectiveShowReports, isMapLoaded, syncCitizenReportsToMap]);
+
+  useEffect(() => {
+    if (!map.current || !isMapLoaded) return;
+    syncSignalsToMap(map.current, signals, showSignals);
+  }, [signals, showSignals, isMapLoaded, syncSignalsToMap]);
 
   // Update location & marker
   useEffect(() => {

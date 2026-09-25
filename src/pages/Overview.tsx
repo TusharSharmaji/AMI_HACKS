@@ -17,6 +17,9 @@ import { usePoiData } from '../hooks/usePoiData';
 import { useMapLayers } from '../context/MapLayersContext';
 import { getWeatherCodeInfo, getAqiCategory } from '../utils/civicDataUtils';
 import { calculateRiskAssessment } from '../services/riskEngine';
+import { useCityPulseSignals } from '../hooks/useCityPulseSignals';
+import { CityPulseSignalsCard } from '../components/dashboard/CityPulseSignalsCard';
+
 
 // ─── Helper: Risk level to gauge color ───────────────────────────────────────
 function riskLevelColor(level: string): string {
@@ -174,7 +177,10 @@ export const Overview: React.FC = () => {
   const { trafficPoints } = useCityTraffic();
   const { pois, filteredPois } = usePoiData();
   const { showTraffic, setShowTraffic, showPois, setShowPois, showReports, setShowReports, showWeather, setShowWeather } = useMapLayers();
+  const { signals, focusSignalOnMap } = useCityPulseSignals();
+  const [showSignals, setShowSignals] = useState(true);
   const navigate = useNavigate();
+
 
   const [citizenReports, setCitizenReports] = useState<CivicReportMeta[]>(() => getReports());
   const [mapUpdatedTime, setMapUpdatedTime] = useState(new Date());
@@ -352,10 +358,10 @@ export const Overview: React.FC = () => {
               </div>
               {/* Layer toggles */}
               {[
+                { label: 'Signals', color: 'bg-amber-400', active: showSignals, toggle: () => setShowSignals(!showSignals) },
                 { label: 'Traffic', color: 'bg-cyan-500', active: showTraffic, toggle: () => setShowTraffic(!showTraffic) },
                 { label: 'Civic Reports', color: 'bg-red-500', active: showReports, toggle: () => setShowReports(!showReports) },
                 { label: 'POIs', color: 'bg-blue-500', active: showPois, toggle: () => setShowPois(!showPois) },
-                { label: 'Risk', color: 'bg-orange-500', active: false, toggle: () => {} },
                 { label: 'Weather', color: 'bg-sky-500', active: showWeather, toggle: () => setShowWeather(!showWeather) },
               ].map(layer => (
                 <button
@@ -392,6 +398,8 @@ export const Overview: React.FC = () => {
                 showPois={showPois}
                 citizenReports={citizenReports}
                 showCitizenReports={showReports}
+                signals={signals}
+                showSignals={showSignals}
               />
 
               {/* Live Map badge */}
@@ -447,6 +455,14 @@ export const Overview: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* CityPulse Signals Component */}
+            <CityPulseSignalsCard
+              signals={signals}
+              onFocusSignal={focusSignalOnMap}
+              onNavigateRisk={() => navigate('/risk-intelligence')}
+            />
+
 
             {/* Live Data Sources */}
             <div className="rounded-2xl border border-white/10 p-4 flex-1" style={{ background: '#0d1424' }}>
