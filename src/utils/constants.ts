@@ -77,22 +77,16 @@ export const NAV_ROUTES: NavRoute[] = [
 
 export const MAP_STYLES = [
   {
-    id: 'dark-matter',
-    name: 'Dark Matter',
-    url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-    description: 'High-contrast nocturnal geospatial theme',
+    id: 'dark',
+    name: 'Dark',
+    url: 'https://tiles.openfreemap.org/styles/dark',
+    description: 'Dark theme for nighttime operations',
   },
   {
-    id: 'positron',
-    name: 'Positron',
-    url: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-    description: 'Clean monochrome daylight cartography',
-  },
-  {
-    id: 'voyager',
-    name: 'Voyager',
-    url: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-    description: 'Detailed infrastructure and road networks',
+    id: 'liberty',
+    name: 'Liberty',
+    url: 'https://tiles.openfreemap.org/styles/liberty',
+    description: 'Clean detailed daylight cartography',
   },
 ];
 
