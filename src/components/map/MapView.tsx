@@ -726,9 +726,13 @@ export const MapView: React.FC<MapViewProps> = ({
   useEffect(() => {
     if (!mapContainer.current) return;
 
+    // Use the CARTO style URL directly — these are public CDN URLs with no API key required
+    const initialStyleUrl = targetStyleUrl;
+    console.log('[CityPulse Map] Initializing MapLibre with style:', initialStyleUrl);
+
     const mapInstance = new Map({
       container: mapContainer.current,
-      style: targetStyleUrl,
+      style: initialStyleUrl,
       center: [selectedLocation.longitude, selectedLocation.latitude],
       zoom: 12.8,
       pitch: 0,
@@ -736,6 +740,12 @@ export const MapView: React.FC<MapViewProps> = ({
       attributionControl: false,
     });
 
+    // ─── Error Handling ──────────────────────────────────────────────────
+    mapInstance.on('error', (e) => {
+      console.error('[CityPulse Map] MapLibre error:', e.error?.message || e.error || e);
+    });
+
+    // ─── Controls ────────────────────────────────────────────────────────
     mapInstance.addControl(
       new NavigationControl({ visualizePitch: false, showCompass: true, showZoom: true }),
       'bottom-right'
@@ -747,10 +757,15 @@ export const MapView: React.FC<MapViewProps> = ({
     );
 
     mapInstance.on('load', async () => {
+      console.log('[CityPulse Map] Style loaded successfully');
       setIsMapLoaded(true);
       mapInstance.resize();
 
-      await registerPoiMapImages(mapInstance);
+      try {
+        await registerPoiMapImages(mapInstance);
+      } catch (err) {
+        console.warn('[CityPulse Map] POI image registration failed:', err);
+      }
 
       // Add center marker
       const el = createCityPulseMarkerElement(selectedLocation);
