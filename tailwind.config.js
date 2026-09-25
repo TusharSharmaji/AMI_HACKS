@@ -1,0 +1,92 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        command: {
+          950: '#07090e',
+          900: '#0c1017',
+          850: '#111722',
+          800: '#17202f',
+          700: '#222f44',
+          600: '#334460',
+          500: '#485e82',
+          400: '#6d84a7',
+          300: '#9cb0cc',
+          200: '#cad6e5',
+          100: '#e7edf5',
+        },
+        civic: {
+          cyan: '#06b6d4',
+          emerald: '#10b981',
+          amber: '#f59e0b',
+          rose: '#f43f5e',
+          blue: '#3b82f6',
+        },
+        /* ── Semantic Theme Colors mapped to CSS variables ── */
+        cp: {
+          base:       'var(--cp-bg-base)',
+          surface:    'var(--cp-bg-surface)',
+          elevated:   'var(--cp-bg-elevated)',
+          overlay:    'var(--cp-bg-overlay)',
+          input:      'var(--cp-bg-input)',
+          'input-h':  'var(--cp-bg-input-hover)',
+          'input-f':  'var(--cp-bg-input-focus)',
+          subtle:     'var(--cp-bg-subtle)',
+          muted:      'var(--cp-bg-muted)',
+          active:     'var(--cp-bg-active)',
+          hover:      'var(--cp-bg-hover)',
+        },
+        'cp-text': {
+          DEFAULT:    'var(--cp-text-primary)',
+          primary:    'var(--cp-text-primary)',
+          secondary:  'var(--cp-text-secondary)',
+          tertiary:   'var(--cp-text-tertiary)',
+          muted:      'var(--cp-text-muted)',
+          heading:    'var(--cp-text-heading)',
+          inverse:    'var(--cp-text-inverse)',
+        },
+        'cp-border': {
+          DEFAULT:    'var(--cp-border)',
+          subtle:     'var(--cp-border-subtle)',
+          strong:     'var(--cp-border-strong)',
+          focus:      'var(--cp-border-focus)',
+        },
+      },
+      fontFamily: {
+        sans: [
+          'Inter',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          'sans-serif',
+        ],
+        mono: [
+          '"JetBrains Mono"',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          'monospace',
+        ],
+      },
+      boxShadow: {
+        'panel': 'var(--cp-shadow-md)',
+        'panel-subtle': 'var(--cp-shadow-sm)',
+        'hud': 'var(--cp-shadow-hud)',
+        'cp-sm': 'var(--cp-shadow-sm)',
+        'cp-md': 'var(--cp-shadow-md)',
+        'cp-lg': 'var(--cp-shadow-lg)',
+        'cp-glow': 'var(--cp-shadow-glow)',
+      },
+    },
+  },
+  plugins: [],
+}

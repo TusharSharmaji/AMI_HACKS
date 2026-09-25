@@ -1,0 +1,262 @@
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   CITYPULSE GLOBAL DESIGN TOKEN SYSTEM
+   One set of CSS variables drives the entire application.
+   Dark is the default; html.light overrides for the light theme.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: dark;
+
+  /* ── Backgrounds ── */
+  --cp-bg-base:          #07090e;       /* deepest app shell */
+  --cp-bg-surface:       #0b0f19;       /* page content bg */
+  --cp-bg-elevated:      #0c1017;       /* cards / panels */
+  --cp-bg-overlay:       rgba(15, 22, 35, 0.95);  /* floating menus */
+  --cp-bg-input:         rgba(255, 255, 255, 0.04);
+  --cp-bg-input-hover:   rgba(255, 255, 255, 0.08);
+  --cp-bg-input-focus:   #0c1017;
+  --cp-bg-subtle:        rgba(255, 255, 255, 0.02);
+  --cp-bg-muted:         rgba(255, 255, 255, 0.04);
+  --cp-bg-active:        rgba(6, 182, 212, 0.15);
+  --cp-bg-hover:         rgba(255, 255, 255, 0.05);
+
+  /* ── Text ── */
+  --cp-text-primary:     #f1f5f9;
+  --cp-text-secondary:   #cbd5e1;
+  --cp-text-tertiary:    #94a3b8;
+  --cp-text-muted:       #64748b;
+  --cp-text-heading:     #ffffff;
+  --cp-text-inverse:     #0f172a;
+
+  /* ── Borders ── */
+  --cp-border:           rgba(255, 255, 255, 0.10);
+  --cp-border-subtle:    rgba(255, 255, 255, 0.05);
+  --cp-border-strong:    rgba(255, 255, 255, 0.15);
+  --cp-border-focus:     rgba(6, 182, 212, 0.60);
+
+  /* ── Shadows ── */
+  --cp-shadow-sm:        0 2px 10px -1px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --cp-shadow-md:        0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --cp-shadow-lg:        0 12px 36px -4px rgba(0, 0, 0, 0.75);
+  --cp-shadow-hud:       0 0 25px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --cp-shadow-glow:      0 0 40px -6px rgba(6, 182, 212, 0.20);
+
+  /* ── Scrollbar ── */
+  --cp-scrollbar-track:  rgba(12, 16, 23, 0.6);
+  --cp-scrollbar-thumb:  rgba(255, 255, 255, 0.15);
+  --cp-scrollbar-hover:  rgba(255, 255, 255, 0.25);
+
+  /* ── Popup / MapLibre Controls ── */
+  --cp-ctrl-bg:          rgba(15, 22, 35, 0.85);
+  --cp-ctrl-border:      rgba(255, 255, 255, 0.12);
+  --cp-ctrl-btn-border:  rgba(255, 255, 255, 0.08);
+  --cp-ctrl-btn-hover:   rgba(255, 255, 255, 0.1);
+  --cp-ctrl-filter:      invert(1) brightness(1.2);
+  --cp-popup-bg:         rgba(8, 12, 22, 0.96);
+  --cp-popup-text:       #f1f5f9;
+
+  /* ── Gradients (hero, panels) ── */
+  --cp-gradient-hero-from: rgba(7, 9, 14, 0.95);
+  --cp-gradient-hero-via:  rgba(12, 16, 23, 0.90);
+  --cp-gradient-hero-to:   rgba(6, 78, 92, 0.40);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT THEME OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+html.light {
+  color-scheme: light;
+
+  /* ── Backgrounds ── */
+  --cp-bg-base:          #f1f5f9;
+  --cp-bg-surface:       #f8fafc;
+  --cp-bg-elevated:      #ffffff;
+  --cp-bg-overlay:       rgba(255, 255, 255, 0.97);
+  --cp-bg-input:         #f1f5f9;
+  --cp-bg-input-hover:   #e2e8f0;
+  --cp-bg-input-focus:   #ffffff;
+  --cp-bg-subtle:        rgba(0, 0, 0, 0.02);
+  --cp-bg-muted:         rgba(0, 0, 0, 0.04);
+  --cp-bg-active:        rgba(6, 182, 212, 0.10);
+  --cp-bg-hover:         rgba(0, 0, 0, 0.04);
+
+  /* ── Text ── */
+  --cp-text-primary:     #0f172a;
+  --cp-text-secondary:   #334155;
+  --cp-text-tertiary:    #64748b;
+  --cp-text-muted:       #94a3b8;
+  --cp-text-heading:     #0f172a;
+  --cp-text-inverse:     #f1f5f9;
+
+  /* ── Borders ── */
+  --cp-border:           rgba(0, 0, 0, 0.10);
+  --cp-border-subtle:    rgba(0, 0, 0, 0.05);
+  --cp-border-strong:    rgba(0, 0, 0, 0.15);
+  --cp-border-focus:     rgba(6, 182, 212, 0.60);
+
+  /* ── Shadows ── */
+  --cp-shadow-sm:        0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --cp-shadow-md:        0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --cp-shadow-lg:        0 8px 24px rgba(0, 0, 0, 0.12);
+  --cp-shadow-hud:       0 2px 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --cp-shadow-glow:      0 0 30px -6px rgba(6, 182, 212, 0.12);
+
+  /* ── Scrollbar ── */
+  --cp-scrollbar-track:  rgba(0, 0, 0, 0.04);
+  --cp-scrollbar-thumb:  rgba(0, 0, 0, 0.15);
+  --cp-scrollbar-hover:  rgba(0, 0, 0, 0.25);
+
+  /* ── Popup / MapLibre Controls ── */
+  --cp-ctrl-bg:          rgba(255, 255, 255, 0.95);
+  --cp-ctrl-border:      rgba(0, 0, 0, 0.12);
+  --cp-ctrl-btn-border:  rgba(0, 0, 0, 0.08);
+  --cp-ctrl-btn-hover:   rgba(0, 0, 0, 0.05);
+  --cp-ctrl-filter:      none;
+  --cp-popup-bg:         rgba(255, 255, 255, 0.98);
+  --cp-popup-text:       #0f172a;
+
+  /* ── Gradients (hero, panels) ── */
+  --cp-gradient-hero-from: rgba(241, 245, 249, 0.95);
+  --cp-gradient-hero-via:  rgba(248, 250, 252, 0.90);
+  --cp-gradient-hero-to:   rgba(207, 250, 254, 0.40);
+}
+
+/* Light mode body */
+html.light body {
+  background-color: var(--cp-bg-base);
+  color: var(--cp-text-primary);
+}
+
+body {
+  background-color: var(--cp-bg-base);
+  color: var(--cp-text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL SCROLLBAR
+   ═══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cp-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cp-scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cp-scrollbar-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAPLIBRE CONTROLS — driven by tokens
+   ═══════════════════════════════════════════════════════════════ */
+.maplibregl-ctrl-group {
+  background: var(--cp-ctrl-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--cp-ctrl-border) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: var(--cp-shadow-md) !important;
+}
+
+.maplibregl-ctrl-group button {
+  border-bottom: 1px solid var(--cp-ctrl-btn-border) !important;
+  background-color: transparent !important;
+  filter: var(--cp-ctrl-filter);
+  transition: all 0.15s ease;
+}
+
+.maplibregl-ctrl-group button:last-child {
+  border-bottom: none !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background-color: var(--cp-ctrl-btn-hover) !important;
+}
+
+.maplibregl-ctrl-attrib {
+  background: var(--cp-ctrl-bg) !important;
+  backdrop-filter: blur(8px);
+  color: var(--cp-text-muted) !important;
+  font-size: 10px !important;
+  padding: 2px 8px !important;
+  border-top-left-radius: 6px;
+  border: 1px solid var(--cp-border-subtle);
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--cp-text-tertiary) !important;
+  text-decoration: none !important;
+}
+
+.maplibregl-ctrl-scale {
+  background: var(--cp-ctrl-bg) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--cp-border-strong) !important;
+  border-top: none !important;
+  color: var(--cp-text-secondary) !important;
+  font-family: ui-monospace, SFMono-Regular, monospace !important;
+  font-size: 10px !important;
+  padding: 0 4px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAPLIBRE POPUP — driven by tokens
+   ═══════════════════════════════════════════════════════════════ */
+.maplibregl-popup-content {
+  background: var(--cp-popup-bg) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--cp-border-strong) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--cp-shadow-lg) !important;
+  padding: 12px !important;
+  color: var(--cp-popup-text) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: var(--cp-popup-bg) !important;
+}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: var(--cp-popup-bg) !important;
+}
+.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--cp-popup-bg) !important;
+}
+.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--cp-popup-bg) !important;
+}
+
+.maplibregl-popup-close-button {
+  color: var(--cp-text-tertiary) !important;
+  padding: 4px 8px !important;
+  font-size: 14px !important;
+}
+.maplibregl-popup-close-button:hover {
+  color: var(--cp-text-heading) !important;
+  background-color: transparent !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SEMANTIC UTILITY CLASSES (for elements not using tailwind)
+   ═══════════════════════════════════════════════════════════════ */
+.cp-surface { background: var(--cp-bg-surface); }
+.cp-elevated { background: var(--cp-bg-elevated); }
+.cp-card {
+  background: var(--cp-bg-elevated);
+  border: 1px solid var(--cp-border);
+  border-radius: 1rem;
+  box-shadow: var(--cp-shadow-sm);
+}
